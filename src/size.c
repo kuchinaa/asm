@@ -12,7 +12,22 @@
 
 #include "asm.h"
 
-int			find_command(char *name)
+unsigned int	take_param(char *param, unsigned int size, t_asm *all)
+{
+	char			*label_char;
+	unsigned int	code;
+
+	code = 0;
+	if (param[0] == 'r' || (param[0] == DIRECT_CHAR && param[1] != LABEL_CHAR))
+		code = ft_atoi((char *)(param + 1));
+	else if (ft_isdigit(param[0]) || param[0] == '-')
+		code = ft_atoi((char *)(param));
+	else if ((label_char = ft_strchr((char *)param, LABEL_CHAR)))
+		code = find_marker(all->markers, (char *)(label_char + 1)) - size;
+	return (code);
+}
+
+int				find_command(char *name)
 {
 	int		i;
 
@@ -23,7 +38,7 @@ int			find_command(char *name)
 	return (-1);
 }
 
-uint8_t		command_size(t_command *comm)
+uint8_t			command_size(t_command *comm)
 {
 	unsigned int	i;
 	uint8_t			size;
@@ -42,7 +57,7 @@ uint8_t		command_size(t_command *comm)
 	return (size);
 }
 
-t_command	*command_add(char *command_line)
+t_command		*command_add(char *command_line)
 {
 	t_command		*comm;
 	uint8_t			size;
@@ -60,7 +75,7 @@ t_command	*command_add(char *command_line)
 	return (comm);
 }
 
-void		add_marker(t_asm *all, t_list *list)
+void			add_marker(t_asm *all, t_list *list)
 {
 	t_marker		*mark;
 	t_command		*comm;

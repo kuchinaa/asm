@@ -32,6 +32,8 @@ t_op				g_op_tab[17];
 void				add_marker(t_asm *all, t_list *list);
 void				add_champion_code(t_asm *all);
 uint8_t				command_size(t_command *comm);
+unsigned int		find_marker(t_list *list, char *name_m);
+unsigned int		take_param(char *param, unsigned int size, t_asm *all);
 
 t_list				*list_init(char *line);
 t_list				*list_add(t_list *list, char *line);

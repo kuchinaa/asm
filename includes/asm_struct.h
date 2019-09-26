@@ -48,7 +48,7 @@ typedef struct					s_tuple
 typedef	struct					s_marker
 {
 	char						*marker;
-	uint8_t						size;
+	unsigned int				size;
 }								t_marker;
 
 typedef	struct					s_command

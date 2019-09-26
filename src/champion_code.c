@@ -12,16 +12,16 @@
 
 #include "asm.h"
 
-void	write_code_type(int fd, char **param, uint8_t args)
+void	write_code_type(int fd, char **param)
 {
 	uint8_t	code;
 	int		i;
 	int		d;
 
 	code = 0;
-	d = 2;
-	i = args - 1;
-	while (i >= 0)
+	d = 6;
+	i = -1;
+	while (param[++i])
 	{
 		if (param[i][0] == DIRECT_CHAR)
 			code |= DIR_CODE << d;
@@ -29,13 +29,12 @@ void	write_code_type(int fd, char **param, uint8_t args)
 			code |= REG_CODE << d;
 		else
 			code |= IND_CODE << d;
-		i--;
-		d += 2;
+		d -= 2;
 	}
 	write(fd, (char *)&code, 1);
 }
 
-uint8_t	find_marker(t_list *list, char *name_m)
+unsigned int	find_marker(t_list *list, char *name_m)
 {
 	while (list)
 	{
@@ -46,7 +45,7 @@ uint8_t	find_marker(t_list *list, char *name_m)
 	return (0);
 }
 
-void	write_with_size(t_asm *all, uint8_t *result, uint32_t code,
+void	write_with_size(uint8_t *result, unsigned int code,
 		uint8_t size)
 {
 	uint16_t	val16;
@@ -62,35 +61,31 @@ void	write_with_size(t_asm *all, uint8_t *result, uint32_t code,
 	}
 }
 
-void	write_param(t_asm *all, char *param, uint8_t size, int flag)
+void	write_param(t_asm *all, char *param, unsigned int size, int flag)
 {
-	uint32_t	code;
-	uint8_t		*result;
-	uint8_t		res_size;
+	unsigned int	code;
+	uint8_t			*result;
+	uint8_t			res_size;
 
-	if (param[0] == 'r' || ft_isdigit(param[0]) ||
-		(param[0] == DIRECT_CHAR && param[1] != LABEL_CHAR))
-		code = ft_atoi((char *)(param + 1));
-	else
-		code = find_marker(all->markers, (char *)(param + 2)) - size;
+	code = take_param(param, size, all);
 	if (param[0] == 'r')
-		res_size = T_REG;
+		res_size = 1;
 	else if (param[0] == DIRECT_CHAR)
-		res_size = (flag) ? T_DIR : T_IND;
+		res_size = (flag) ? 2 : 4;
 	else
-		res_size = T_IND;
+		res_size = 2;
 	result = malloc(res_size);
-	write_with_size(all, result, code, res_size);
+	write_with_size(result, code, res_size);
 	write(all->fd, result, res_size);
 	free(result);
 }
 
 void	add_champion_code(t_asm *all)
 {
-	t_command	*comm;
-	t_list		*l;
-	uint8_t		size;
-	int			i;
+	t_command		*comm;
+	t_list			*l;
+	unsigned int	size;
+	int				i;
 
 	l = all->command_start;
 	size = 0;
@@ -99,8 +94,7 @@ void	add_champion_code(t_asm *all)
 		comm = GET_COMM(l);
 		write(all->fd, (char *)&g_op_tab[comm->command].index, 1);
 		if (g_op_tab[comm->command].type_code)
-			write_code_type(all->fd, comm->param,
-					g_op_tab[comm->command].count_of_arg);
+			write_code_type(all->fd, comm->param);
 		i = -1;
 		while (comm->param[++i])
 			write_param(all, comm->param[i], size,
@@ -108,4 +102,5 @@ void	add_champion_code(t_asm *all)
 		size += comm->size;
 		l = l->next;
 	}
+	//system("leaks asm");
 }

@@ -51,21 +51,19 @@ void	add_head(t_asm *all, t_list *l)
 	ADD_NULL(all->fd);
 }
 
-void	write_asm(t_list *list)
+void	write_asm(t_asm *all, t_list *list)
 {
-	t_asm		all;
-
-	ft_bzero(&all, sizeof(t_asm));
 	g_header.magic = COREWAR_EXEC_MAGIC;
-	FILE_CHECK((all.fd = open("ex.cor", O_WRONLY | O_CREAT | O_TRUNC, 0777)));
-	add_head(&all, list);
-	add_marker(&all, list);
+	FILE_CHECK((all->fd = open("ex.cor", O_WRONLY | O_CREAT | O_TRUNC, 0777)));
+	add_head(all, list);
+	add_marker(all, list);
 	g_header.prog_size = REV(g_header.prog_size);
-	write(all.fd, &g_header.prog_size, sizeof(g_header.prog_size));
-	write(all.fd, &g_header.comment, COMMENT_LENGTH);
-	ADD_NULL(all.fd);
-	add_champion_code(&all);
-	close(all.fd);
+	write(all->fd, &g_header.prog_size, sizeof(g_header.prog_size));
+	write(all->fd, &g_header.comment, COMMENT_LENGTH);
+	ADD_NULL(all->fd);
+	add_champion_code(all);
+	system("leaks asm_t");
+	close(all->fd);
 }
 
 void	check_file_name(char *name)
@@ -90,10 +88,12 @@ void	init_param(void)
 
 int		main(int ac, char **av)
 {
+	t_asm		all;
 	t_list		*list;
 
 	if (ac == 2)
 	{
+		ft_bzero(&all, sizeof(t_asm));
 		ft_bzero(&g_header, sizeof(t_header));
 		check_file_name(av[1]);
 		init_param();
@@ -102,11 +102,12 @@ int		main(int ac, char **av)
 		operations(list);
 		printf(BLUE"name = %s\n"RESET, g_header.prog_name);
 		printf(BLUE"comment = %s\n"RESET, g_header.comment);
-		write_asm(list);
+		write_asm(&all, list);
 	}
 	else if (ac == 1)
 		ft_printf(RED"Missing file\n"RESET);
 	else if (ac > 2)
 		ft_printf(RED"Too much files\n"RESET);
+	system("leaks asm_t");
 	return (0);
 }
